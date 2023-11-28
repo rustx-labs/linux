@@ -5,9 +5,10 @@
 //! Each bus/subsystem is expected to implement [`DriverOps`], which allows drivers to register
 //! using the [`Registration`] class.
 
-use crate::{error::code::*, error::Result, sync::Arc, ThisModule};
+use crate::{error::code::*, error::Result, str::CStr, sync::Arc, ThisModule};
 use alloc::boxed::Box;
 use core::{cell::UnsafeCell, marker::PhantomData, ops::Deref, pin::Pin};
+use crate::c_str;
 
 /// A subsystem (e.g., PCI, Platform, Amba, etc.) that allows drivers to be written for it.
 pub trait DriverOps {
@@ -26,6 +27,7 @@ pub trait DriverOps {
     /// [`DriverOps::unregister`].
     unsafe fn register(
         reg: *mut Self::RegType,
+        name: &'static CStr,
         module: &'static ThisModule,
     ) -> Result;
 
@@ -60,9 +62,9 @@ impl<T: DriverOps> Registration<T> {
     /// Allocates a pinned registration object and registers it.
     ///
     /// Returns a pinned heap-allocated representation of the registration.
-    pub fn new_pinned(module: &'static ThisModule) -> Result<Pin<Box<Self>>> {
+    pub fn new_pinned(name: &'static CStr, module: &'static ThisModule) -> Result<Pin<Box<Self>>> {
         let mut reg = Pin::from(Box::try_new(Self::new())?);
-        reg.as_mut().register(module)?;
+        reg.as_mut().register(name, module)?;
         Ok(reg)
     }
 
@@ -72,6 +74,7 @@ impl<T: DriverOps> Registration<T> {
     /// self-referential.
     pub fn register(
         self: Pin<&mut Self>,
+        name: &'static CStr,
         module: &'static ThisModule,
     ) -> Result {
         // SAFETY: We never move out of `this`.
@@ -83,7 +86,7 @@ impl<T: DriverOps> Registration<T> {
 
         // SAFETY: `concrete_reg` was initialised via its default constructor. It is only freed
         // after `Self::drop` is called, which first calls `T::unregister`.
-        unsafe { T::register(this.concrete_reg.get(), module) }?;
+        unsafe { T::register(this.concrete_reg.get(), name, module) }?;
 
         this.is_registered = true;
         Ok(())
@@ -105,6 +108,7 @@ impl<T: DriverOps> Drop for Registration<T> {
         }
     }
 }
+
 /// Conversion from a device id to a raw device id.
 ///
 /// This is meant to be implemented by buses/subsystems so that they can use [`IdTable`] to
@@ -418,7 +422,7 @@ pub struct Module<T: DriverOps> {
 impl<T: DriverOps> crate::Module for Module<T> {
     fn init(module: &'static ThisModule) -> Result<Self> {
         Ok(Self {
-            _driver: Registration::new_pinned(module)?,
+            _driver: Registration::new_pinned(c_str!("rust_driver"), module)?,
         })
     }
 }

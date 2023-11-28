@@ -13,14 +13,15 @@
 
 #![no_std]
 #![feature(allocator_api)]
+#![feature(associated_type_defaults)]
 #![feature(coerce_unsized)]
+#![feature(const_trait_impl)]
 #![feature(dispatch_from_dyn)]
 #![feature(new_uninit)]
 #![feature(offset_of)]
 #![feature(ptr_metadata)]
 #![feature(receiver_trait)]
 #![feature(unsize)]
-#![feature(const_trait_impl)]
 
 #![allow(missing_docs)]
 
@@ -41,7 +42,9 @@ pub mod dma;
 pub mod driver;
 pub mod error;
 pub mod init;
+pub mod io_mem;
 pub mod ioctl;
+pub mod irq;
 #[cfg(CONFIG_KUNIT)]
 pub mod kunit;
 pub mod prelude;
@@ -60,6 +63,8 @@ pub mod workqueue;
 #[doc(hidden)]
 pub use bindings;
 pub use macros;
+#[cfg(CONFIG_PCI)]
+pub mod pci;
 pub use uapi;
 
 #[doc(hidden)]
