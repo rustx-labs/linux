@@ -15,6 +15,8 @@
 #![feature(allocator_api)]
 #![feature(associated_type_defaults)]
 #![feature(coerce_unsized)]
+#![feature(const_mut_refs)]
+#![feature(const_refs_to_cell)]
 #![feature(const_trait_impl)]
 #![feature(dispatch_from_dyn)]
 #![feature(new_uninit)]
@@ -55,7 +57,6 @@ mod static_assert;
 pub mod std_vendor;
 pub mod str;
 pub mod sync;
-pub mod of;
 pub mod task;
 pub mod types;
 pub mod workqueue;
