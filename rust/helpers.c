@@ -21,11 +21,19 @@
  */
 
 #include <kunit/test-bug.h>
+#include <linux/bio.h>
+#include <linux/blk-mq.h>
+#include <linux/blkdev.h>
 #include <linux/bug.h>
 #include <linux/build_bug.h>
+#include <linux/delay.h>
+#include <linux/device.h>
 #include <linux/err.h>
 #include <linux/errname.h>
+#include <linux/highmem.h>
 #include <linux/mutex.h>
+#include <linux/pci.h>
+#include <linux/rcupdate.h>
 #include <linux/refcount.h>
 #include <linux/sched/signal.h>
 #include <linux/spinlock.h>
@@ -145,6 +153,79 @@ struct kunit *rust_helper_kunit_get_current_test(void)
 }
 EXPORT_SYMBOL_GPL(rust_helper_kunit_get_current_test);
 
+
+struct bio_vec rust_helper_req_bvec(struct request *rq)
+{
+	return req_bvec(rq);
+}
+EXPORT_SYMBOL_GPL(rust_helper_req_bvec);
+
+void *rust_helper_blk_mq_rq_to_pdu(struct request *rq)
+{
+	return blk_mq_rq_to_pdu(rq);
+}
+EXPORT_SYMBOL_GPL(rust_helper_blk_mq_rq_to_pdu);
+
+struct request *rust_helper_blk_mq_rq_from_pdu(void* pdu) {
+  return blk_mq_rq_from_pdu(pdu);
+}
+EXPORT_SYMBOL_GPL(rust_helper_blk_mq_rq_from_pdu);
+
+struct request *rust_helper_blk_mq_tag_to_rq(struct blk_mq_tags *tags,
+					     unsigned int tag)
+{
+	return blk_mq_tag_to_rq(tags, tag);
+}
+EXPORT_SYMBOL_GPL(rust_helper_blk_mq_tag_to_rq);
+
+unsigned int rust_helper_blk_rq_payload_bytes(struct request *rq)
+{
+	return blk_rq_payload_bytes(rq);
+}
+EXPORT_SYMBOL_GPL(rust_helper_blk_rq_payload_bytes);
+
+unsigned short rust_helper_blk_rq_nr_phys_segments(struct request *rq)
+{
+	return blk_rq_nr_phys_segments(rq);
+}
+EXPORT_SYMBOL_GPL(rust_helper_blk_rq_nr_phys_segments);
+
+void *rust_helper_dev_get_drvdata(struct device *dev)
+{
+    return dev_get_drvdata(dev);
+}
+EXPORT_SYMBOL_GPL(rust_helper_dev_get_drvdata);
+
+const char *rust_helper_dev_name(const struct device *dev)
+{
+	return dev_name(dev);
+}
+EXPORT_SYMBOL_GPL(rust_helper_dev_name);
+
+unsigned int rust_helper_num_possible_cpus(void)
+{
+	return  num_possible_cpus();
+}
+EXPORT_SYMBOL_GPL(rust_helper_num_possible_cpus);
+
+void rust_helper_mdelay(uint64_t ms)
+{
+	mdelay(ms);
+}
+EXPORT_SYMBOL_GPL(rust_helper_mdelay);
+
+void rust_helper_pci_set_drvdata(struct pci_dev *pdev, void *data)
+{
+    pci_set_drvdata(pdev, data);
+}
+EXPORT_SYMBOL_GPL(rust_helper_pci_set_drvdata);
+
+void *rust_helper_pci_get_drvdata(struct pci_dev *pdev)
+{
+    return pci_get_drvdata(pdev);
+}
+EXPORT_SYMBOL_GPL(rust_helper_pci_get_drvdata);
+
 void rust_helper_init_work_with_key(struct work_struct *work, work_func_t func,
 				    bool onstack, const char *name,
 				    struct lock_class_key *key)
@@ -156,6 +237,20 @@ void rust_helper_init_work_with_key(struct work_struct *work, work_func_t func,
 	work->func = func;
 }
 EXPORT_SYMBOL_GPL(rust_helper_init_work_with_key);
+
+/* rcu */
+void rust_helper_rcu_read_lock(void)
+{
+	rcu_read_lock();
+}
+EXPORT_SYMBOL_GPL(rust_helper_rcu_read_lock);
+
+void rust_helper_rcu_read_unlock(void)
+{
+	rcu_read_unlock();
+}
+EXPORT_SYMBOL_GPL(rust_helper_rcu_read_unlock);
+/* end rcu */
 
 /*
  * `bindgen` binds the C `size_t` type as the Rust `usize` type, so we can

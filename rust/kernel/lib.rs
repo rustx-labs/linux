@@ -20,6 +20,9 @@
 #![feature(ptr_metadata)]
 #![feature(receiver_trait)]
 #![feature(unsize)]
+#![feature(const_trait_impl)]
+
+#![allow(missing_docs)]
 
 // Ensure conditional compilation based on the kernel configuration works;
 // otherwise we may silently break things like initcall handling.
@@ -33,6 +36,9 @@ extern crate self as kernel;
 #[cfg(not(testlib))]
 mod allocator;
 mod build_assert;
+pub mod device;
+pub mod dma;
+pub mod driver;
 pub mod error;
 pub mod init;
 pub mod ioctl;
@@ -40,11 +46,13 @@ pub mod ioctl;
 pub mod kunit;
 pub mod prelude;
 pub mod print;
+pub mod revocable;
 mod static_assert;
 #[doc(hidden)]
 pub mod std_vendor;
 pub mod str;
 pub mod sync;
+pub mod of;
 pub mod task;
 pub mod types;
 pub mod workqueue;
