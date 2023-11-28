@@ -153,7 +153,7 @@ impl<T: RawDeviceId, U, const N: usize> IdArray<T, U, N> {
     /// Creates a new instance of the array.
     ///
     /// The contents are derived from the given identifiers and context information.
-    pub fn new(ids: [T; N], infos: [Option<U>; N]) -> Self
+    pub const fn new(ids: [T; N], infos: [Option<U>; N]) -> Self
     where
         T: ~const RawDeviceId + Copy,
     {
@@ -171,7 +171,7 @@ impl<T: RawDeviceId, U, const N: usize> IdArray<T, U, N> {
                 (&array.id_infos[i] as *const _ as *const u8)
                     .offset_from(&array.ids[i] as *const _ as _)
             };
-            array.ids[i] = ids[i].to_rawid(offset);
+            // array.ids[i] = ids[i].to_rawid(offset);
             i += 1;
         }
         array
